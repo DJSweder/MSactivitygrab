@@ -30,6 +30,9 @@ LIMIT = 1000  # Můžete si upravit podle potřeby
 # Soubor, do kterého budeme ukládat data
 output_file = 'microsoft_signin_data.txt'
 
+# Inicializace slovníku pro ukládání unikátních záznamů
+unique_records = {}
+
 # Inicializace počítadla záznamů
 record_count = 0
 
@@ -65,17 +68,25 @@ with open(output_file, 'w', encoding='utf-8') as file:
                     ip_element = container.find_element(By.CLASS_NAME, 'ipContainerSelector')
                     ip_address = ip_element.text.strip()
 
-                    # Kontrolní výpisy pro debugování
-                    print(f"Časový údaj: {time_data}")
-                    print(f"IP adresa: {ip_address}")
-                    print(f"Výsledek přihlášení: {status}")
+                    # Vytvoření klíče pro záznam
+                    record_key = f"{time_data};{ip_address};{status}"
 
-                    # Zapsání do souboru
-                    file.write(f"{time_data};{ip_address};{status}\n")
+                    # Kontrola, zda záznam již existuje (duplicita)
+                    if record_key not in unique_records:
+                        # Uložení záznamu do slovníku
+                        unique_records[record_key] = True
 
-                    record_count += 1
-                    if record_count >= LIMIT:
-                        break
+                        # Kontrolní výpisy pro debugování
+                        print(f"Časový údaj: {time_data}")
+                        print(f"IP adresa: {ip_address}")
+                        print(f"Výsledek přihlášení: {status}")
+
+                        # Zapsání do souboru
+                        file.write(f"{time_data};{ip_address};{status}\n")
+
+                        record_count += 1
+                        if record_count >= LIMIT:
+                            break
 
                 except StaleElementReferenceException:
                     # Ignorování chyby, pokusíme se to na další iteraci
